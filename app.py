@@ -78,13 +78,16 @@ class KellyAIScientist:
         
         theme = random.choice(fallback_themes)
         
+        # Fixed the f-string syntax - use double quotes for the outer string
+        first_word = user_question.split()[0] if user_question.split() else "life"
+        
         return f"""
 When digital pathways briefly fade,
 And technical shadows are displayed,
 My poetic voice still finds its way,
 To question what you've come to say.
 
-Your query about {user_question.split()[0] if user_question.split() else 'life's mystery'},
+Your query about {first_word},
 Invites analytical history.
 Though systems temporary may depart,
 The scientific, questioning heart
