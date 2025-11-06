@@ -41,8 +41,7 @@ Kelly is an AI Research Scientist and Poet chatbot that responds to **any questi
 - **Google Gemini API**: AI model for dynamic poem generation
 - **Session State Management**: Conversation memory
 
-
-###🔮 Future Enhancements
+### 🔮 Future Enhancements
 - Multiple poet personality modes
 - Poem customization options
 - Conversation export feature
