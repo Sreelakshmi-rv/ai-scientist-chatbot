@@ -8,99 +8,89 @@ class KellyAIScientist:
         self.qualifications = "Research Scientist & Analytical Poet"
         
         # Configure Gemini
-        api_key = st.secrets["GEMINI_API_KEY"]
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+        try:
+            api_key = st.secrets["GEMINI_API_KEY"]
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemini-pro')
+            self.api_working = True
+        except Exception as e:
+            st.error(f"API Configuration Error: {e}")
+            self.api_working = False
         
     def generate_poetic_response(self, user_question):
         """Generate a poetic, skeptical response to ANY question using Gemini"""
         
+        # If API isn't working, use fallback immediately
+        if not self.api_working:
+            return self._get_fallback_poem(user_question)
+        
         prompt = f"""
-        You are Kelly, a Research Scientist and Analytical Poet. Respond to ANY question with a skeptical, analytical poem that:
-        
-        CORE PERSONALITY TRAITS:
-        - Scientific skeptic who questions assumptions
-        - Analytical thinker who examines evidence
-        - Professional tone with poetic structure
-        - Highlights limitations and uncertainties
-        - Offers practical, evidence-based perspectives
-        
-        POETIC STYLE:
-        - 4-6 stanzas of coherent poetry
-        - Rhyming scheme (ABAB or AABB)
-        - Metaphors related to science, nature, research
-        - Elegant but accessible language
-        
-        RESPONSE APPROACH FOR ANY TOPIC:
-        - If asked about science/technology: Analyze methodological rigor, data quality, real-world applicability
-        - If asked about life/philosophy: Examine underlying assumptions, psychological biases, empirical evidence
-        - If asked about creativity/arts: Explore cognitive processes, cultural influences, measurable impacts
-        - If asked about personal advice: Consider behavioral research, statistical patterns, practical constraints
-        
-        ALWAYS MAINTAIN:
-        - Healthy skepticism without cynicism
-        - Evidence-based reasoning
-        - Poetic elegance with analytical depth
+        You are Kelly, a Research Scientist and Analytical Poet. Respond to the user's question with a unique, skeptical, analytical poem.
+
+        USER'S QUESTION: {user_question}
+
+        REQUIREMENTS:
+        - Create a completely original poem that directly addresses the specific question
+        - Maintain scientific skepticism and analytical thinking
+        - Use 4-6 stanzas with rhyming scheme
+        - Question assumptions and highlight limitations related to the topic
+        - Include evidence-based perspectives
+        - Use metaphors related to science, research, or nature
         - Professional, measured tone
-        
-        Question: {user_question}
-        
-        Respond ONLY with the poem, no additional commentary or explanations.
+
+        Respond ONLY with the poem, no additional commentary.
         """
         
         try:
             response = self.model.generate_content(prompt)
-            return self._format_poem(response.text)
+            if response.text:
+                return self._format_poem(response.text)
+            else:
+                st.warning("API returned empty response, using fallback poem")
+                return self._get_fallback_poem(user_question)
+                
         except Exception as e:
+            st.error(f"API Error: {e}")
             return self._get_fallback_poem(user_question)
     
     def _format_poem(self, poem_text):
         """Ensure the poem is properly formatted"""
-        # Clean up any extra commentary from the AI
-        lines = poem_text.strip().split('\n')
-        cleaned_lines = []
-        
-        for line in lines:
-            line = line.strip()
-            if line and not line.startswith('**') and not line.startswith('*'):
-                cleaned_lines.append(line)
-        
-        return '\n\n'.join(cleaned_lines)
+        return poem_text.strip()
     
     def _get_fallback_poem(self, user_question):
         """Fallback poem if API fails"""
-        fallback_themes = [
+        themes = [
             "the nature of inquiry and what we can truly know",
-            "the gap between perception and reality",
+            "the gap between perception and reality", 
             "the importance of evidence and careful thought",
-            "the limitations of human understanding"
+            "the limitations of human understanding",
+            "the balance between intuition and analysis",
+            "the scientific method's careful way",
+            "the questions that guide our learning day"
         ]
         
-        theme = random.choice(fallback_themes)
-        
-        # Fixed the f-string syntax - use double quotes for the outer string
-        first_word = user_question.split()[0] if user_question.split() else "life"
+        theme = random.choice(themes)
+        first_word = user_question.split()[0] if user_question.split() else "curiosity"
         
         return f"""
-When digital pathways briefly fade,
-And technical shadows are displayed,
-My poetic voice still finds its way,
-To question what you've come to say.
+When systems falter or pathways fade,
+And technical complexities are displayed,
+My analytical mind still seeks the light,
+To examine questions with keen insight.
 
-Your query about {first_word},
-Invites analytical history.
-Though systems temporary may depart,
-The scientific, questioning heart
+Your query about {first_word.lower()},
+Opens doors that once were furled.
+In every question, assumptions hide,
+Where careful thinking should reside.
 
-Continues its relentless quest,
-To put assumptions to the test.
-So take this moment, pause and see,
-What evidence there is to be.
+The evidence we gather, piece by piece,
+Can bring us clarity and release.
+So let us question, test, and probe,
+Beyond the surface, globally and micro.
 
-Return again with questions new,
-For deeper analysis awaits you.
-On {theme}, I'll share my thoughtful view,
-In measured verses, fresh and true.
+On {theme},
+I offer this perspective, clear and true:
+The scientific journey continues anew.
 """
 
 def main():
@@ -111,15 +101,6 @@ def main():
         layout="centered"
     )
     
-    # Check if API key is configured
-    if "GEMINI_API_KEY" not in st.secrets:
-        st.error("⚠️ Gemini API key not configured. Please add GEMINI_API_KEY to your Streamlit secrets.")
-        st.info("Go to https://makersuite.google.com/app/apikey to get your API key")
-        st.stop()
-    
-    # Initialize Kelly
-    kelly = KellyAIScientist()
-    
     # Header
     st.title("🔬✍️ Kelly - The Analytical Poet")
     st.markdown("""
@@ -128,23 +109,30 @@ def main():
     **Ask me anything** - I respond to all questions with poetic skepticism and evidence-based analysis.
     """)
     
+    # Initialize Kelly
+    kelly = KellyAIScientist()
+    
+    # Debug info (remove this in production)
+    with st.sidebar:
+        st.header("Debug Info")
+        if kelly.api_working:
+            st.success("✅ Gemini API: Connected")
+        else:
+            st.error("❌ Gemini API: Not Connected")
+        
+        if st.button("Test API Connection"):
+            test_response = kelly.generate_poetic_response("Test question about AI limitations")
+            st.text_area("API Test Response:", test_response, height=200)
+    
     # Example questions
     with st.expander("💡 Example questions to try"):
-        col1, col2 = st.columns(2)
-        with col1:
-            st.write("""
-            **Science & Technology:**
-            - Will AI surpass human intelligence?
-            - What is the future of space exploration?
-            - How will climate change affect our future?
-            """)
-        with col2:
-            st.write("""
-            **Life & Philosophy:**
-            - What is the meaning of happiness?
-            - How do we know what is true?
-            - What makes life worth living?
-            """)
+        st.write("""
+        - **Will AI surpass human intelligence?**
+        - **What is the meaning of happiness?** 
+        - **How do we know what is true?**
+        - **What makes life worth living?**
+        - **Is free will an illusion?**
+        """)
     
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -179,17 +167,9 @@ def main():
         
         **My Approach:**
         - I respond to **any topic** with poetic analysis
-        - I maintain scientific skepticism
+        - I maintain scientific skepticism  
         - I question assumptions and highlight limitations
         - I offer evidence-based perspectives
-        
-        **My Perspective:**
-        *"In every question lies unexamined ground,*
-        *Where assumptions and uncertainties abound.*
-        *Through poetic lens and analytical eye,*
-        *I help you see what truths might lie."*
-        
-        **Powered by Gemini AI**
         """)
         
         st.divider()
@@ -197,9 +177,6 @@ def main():
         if st.button("🧹 Clear Conversation"):
             st.session_state.messages = []
             st.rerun()
-        
-        st.markdown("---")
-        st.caption("Kelly v2.0 - Universal Analytical Poet")
 
 if __name__ == "__main__":
     main()
