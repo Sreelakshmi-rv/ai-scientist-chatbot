@@ -9,4 +9,5 @@ A poetic AI scientist chatbot that responds to every question with skeptical, an
 - Maintains professional, analytical tone
 
 ## Deployment
-Deployed on Streamlit Community Cloud
+Deployed on Streamlit Community Cloud!
+Live demo: [https://ai-scientist-chatbot-wsrv.streamlit.app/]
