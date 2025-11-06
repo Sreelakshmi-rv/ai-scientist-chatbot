@@ -2,11 +2,6 @@
 
 *A sophisticated AI Scientist Chatbot that responds to every question with skeptical, analytical poetry*
 
-![Kelly Chatbot](https://img.shields.io/badge/Status-Live%20%26%20Working-success)
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Streamlit](https://img.shields.io/badge/Deployment-Streamlit%20Cloud-red)
-![Gemini AI](https://img.shields.io/badge/Powered%20By-Gemini%20AI-orange)
-
 ## 🌟 Live Demo
 
 **Experience Kelly:** [https://ai-scientist-chatbot-wsrv.streamlit.app/](https://ai-scientist-chatbot-wsrv.streamlit.app/)
