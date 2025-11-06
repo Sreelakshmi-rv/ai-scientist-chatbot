@@ -8,7 +8,7 @@ class KellyAIScientist:
         self.qualifications = "Research Scientist & Analytical Poet"
         
         # Configure Gemini
-        api_key = st.secrets["AIzaSyCdkNU4uSPuFSPh8Q8jjvC1I0Esg94LX3A"]
+        api_key = st.secrets["AIzaSyALVsPWysBeZA3eQnmlwHyGddFKMjjxucQ"]
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-pro')
         
