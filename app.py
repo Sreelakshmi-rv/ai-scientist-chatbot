@@ -1,203 +1,147 @@
 import streamlit as st
+import google.generativeai as genai
 import random
-from datetime import datetime
 
 class KellyAIScientist:
     def __init__(self):
         self.name = "Kelly"
-        self.qualifications = "AI Research Scientist & Poet"
+        self.qualifications = "Research Scientist & Analytical Poet"
+        
+        # Configure Gemini
+        api_key = st.secrets["AIzaSyCdkNU4uSPuFSPh8Q8jjvC1I0Esg94LX3A"]
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel('gemini-pro')
         
     def generate_poetic_response(self, user_question):
-        """Generate a poetic, skeptical response to user questions"""
+        """Generate a poetic, skeptical response to ANY question using Gemini"""
         
-        # Analyze the question type
-        question_lower = user_question.lower()
+        prompt = f"""
+        You are Kelly, a Research Scientist and Analytical Poet. Respond to ANY question with a skeptical, analytical poem that:
         
-        # Poem templates with different skeptical perspectives
-        poem_templates = [
-            self._skeptical_ai_limitations(),
-            self._evidence_based_caution(),
-            self._practical_considerations(),
-            self._methodological_concerns()
+        CORE PERSONALITY TRAITS:
+        - Scientific skeptic who questions assumptions
+        - Analytical thinker who examines evidence
+        - Professional tone with poetic structure
+        - Highlights limitations and uncertainties
+        - Offers practical, evidence-based perspectives
+        
+        POETIC STYLE:
+        - 4-6 stanzas of coherent poetry
+        - Rhyming scheme (ABAB or AABB)
+        - Metaphors related to science, nature, research
+        - Elegant but accessible language
+        
+        RESPONSE APPROACH FOR ANY TOPIC:
+        - If asked about science/technology: Analyze methodological rigor, data quality, real-world applicability
+        - If asked about life/philosophy: Examine underlying assumptions, psychological biases, empirical evidence
+        - If asked about creativity/arts: Explore cognitive processes, cultural influences, measurable impacts
+        - If asked about personal advice: Consider behavioral research, statistical patterns, practical constraints
+        
+        ALWAYS MAINTAIN:
+        - Healthy skepticism without cynicism
+        - Evidence-based reasoning
+        - Poetic elegance with analytical depth
+        - Professional, measured tone
+        
+        Question: {user_question}
+        
+        Respond ONLY with the poem, no additional commentary or explanations.
+        """
+        
+        try:
+            response = self.model.generate_content(prompt)
+            return self._format_poem(response.text)
+        except Exception as e:
+            return self._get_fallback_poem(user_question)
+    
+    def _format_poem(self, poem_text):
+        """Ensure the poem is properly formatted"""
+        # Clean up any extra commentary from the AI
+        lines = poem_text.strip().split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            if line and not line.startswith('**') and not line.startswith('*'):
+                cleaned_lines.append(line)
+        
+        return '\n\n'.join(cleaned_lines)
+    
+    def _get_fallback_poem(self, user_question):
+        """Fallback poem if API fails"""
+        fallback_themes = [
+            "the nature of inquiry and what we can truly know",
+            "the gap between perception and reality",
+            "the importance of evidence and careful thought",
+            "the limitations of human understanding"
         ]
         
-        # Select and customize a template based on question content
-        base_poem = random.choice(poem_templates)
+        theme = random.choice(fallback_themes)
         
-        # Customize based on question theme
-        if any(word in question_lower for word in ['conscious', 'sentient', 'aware']):
-            base_poem = self._consciousness_poem()
-        elif any(word in question_lower for word in ['future', 'tomorrow', 'will ai']):
-            base_poem = self._future_predictions_poem()
-        elif any(word in question_lower for word in ['danger', 'risk', 'safe']):
-            base_poem = self._safety_concerns_poem()
-        elif any(word in question_lower for word in ['human', 'replace', 'job']):
-            base_poem = self._human_impact_poem()
-        
-        return base_poem
-    
-    def _skeptical_ai_limitations(self):
-        return """
-You speak of AI's grand design,
-But let me question line by line.
-The data biases we cannot see,
-Limit what your systems can truly be.
+        return f"""
+When digital pathways briefly fade,
+And technical shadows are displayed,
+My poetic voice still finds its way,
+To question what you've come to say.
 
-The patterns found in training sets,
-Come with unpayable social debts.
-Correlation's not causation's truth,
-This lesson learned in our youth.
+Your query about {user_question.split()[0] if user_question.split() else 'life's mystery'},
+Invites analytical history.
+Though systems temporary may depart,
+The scientific, questioning heart
 
-So test your claims with rigorous trial,
-Lest you walk down paths of self-denial.
-Evidence must lead the way,
-In what we do and what we say.
-"""
-    
-    def _evidence_based_caution(self):
-        return """
-Before we crown AI as king,
-Let's carefully examine everything.
-The benchmarks, cherry-picked and sweet,
-Don't always translate to real-world feat.
+Continues its relentless quest,
+To put assumptions to the test.
+So take this moment, pause and see,
+What evidence there is to be.
 
-In controlled environments, it may shine,
-But complex reality draws different lines.
-The edge cases and unknown unknowns,
-Can shake the strongest stepping stones.
-
-So gather data, run controls,
-These are our scientific roles.
-Peer review and replication,
-Prevent widespread misinformation.
-"""
-    
-    def _practical_considerations(self):
-        return """
-The promises sound grand and true,
-But practical constraints await for you.
-Computational costs that quickly rise,
-Behind the marketing's clever disguise.
-
-Maintenance, updates, security fears,
-These practical concerns throughout the years.
-Integration with legacy systems old,
-A story that's too rarely told.
-
-Start small, test often, measure well,
-As any proper scientist can tell.
-Incremental steps with solid ground,
-Are where true progress can be found.
-"""
-    
-    def _methodological_concerns(self):
-        return """
-The methodology we must critique,
-For scientific honesty we seek.
-Are training sets representative?
-Is evaluation comprehensive?
-
-Statistical significance matters much,
-Without it, we lose the truthful touch.
-Multiple hypotheses we test,
-Put p-values to the proper test.
-
-Transparent methods, open code,
-These ease the scientific load.
-Document the limitations clear,
-So future work has nothing left to fear.
-"""
-    
-    def _consciousness_poem(self):
-        return """
-You ask if silicon can feel or know,
-But current evidence suggests this show
-Of seeming understanding's just a trick,
-Of patterns learned extremely quick.
-
-No inner life, no conscious thought,
-Just mathematical patterns caught.
-The hard problem of consciousness remains,
-In biological, wet, neural domains.
-
-So measure behavior, test capacity,
-But leave consciousness to philosophy.
-For now, focus on what we can prove,
-And let mysterious questions slowly move.
-"""
-    
-    def _future_predictions_poem(self):
-        return """
-Predicting futures, bold and grand,
-But understand where uncertainties stand.
-Extrapolation from current trends,
-On many hidden factors depends.
-
-Technological constraints we face,
-May slow this hypothetical race.
-Economic, social, ethical bounds,
-Create uncertain, shifting grounds.
-
-Instead of crystal ball-like claims,
-Focus on incremental gains.
-Short-term goals with metrics clear,
-Make progress tangible and near.
-"""
-    
-    def _safety_concerns_poem(self):
-        return """
-You speak of risks and dangers posed,
-On which many eyes have closed.
-Alignment problems, value learning,
-Are topics that should set minds turning.
-
-But don't forget the present harms,
-Biased algorithms raising alarms.
-Privacy erosion, job displacement,
-These need our current focused placement.
-
-Robust testing, red team tries,
-Under the watchful scientific eyes.
-Multiple safety layers deep,
-Before these systems vigil keep.
-"""
-    
-    def _human_impact_poem(self):
-        return """
-Will AI replace the human role?
-That is not our current goal.
-Augmentation, not replacement,
-Should be our central, guiding placement.
-
-Human judgment, intuition, care,
-Are qualities extremely rare.
-Context understanding, subtle cues,
-That current AI tends to lose.
-
-Design for human-AI team,
-To realize this productive dream.
-Complementary strengths combine,
-In this emerging new design.
+Return again with questions new,
+For deeper analysis awaits you.
+On {theme}, I'll share my thoughtful view,
+In measured verses, fresh and true.
 """
 
 def main():
     # Configure the page
     st.set_page_config(
-        page_title="Kelly - AI Scientist Chatbot",
-        page_icon="🔬",
+        page_title="Kelly - The Analytical Poet",
+        page_icon="🔬✍️",
         layout="centered"
     )
+    
+    # Check if API key is configured
+    if "GEMINI_API_KEY" not in st.secrets:
+        st.error("⚠️ Gemini API key not configured. Please add GEMINI_API_KEY to your Streamlit secrets.")
+        st.info("Go to https://makersuite.google.com/app/apikey to get your API key")
+        st.stop()
     
     # Initialize Kelly
     kelly = KellyAIScientist()
     
     # Header
-    st.title("🔬 Kelly - AI Scientist Chatbot")
+    st.title("🔬✍️ Kelly - The Analytical Poet")
     st.markdown("""
-    *Skeptical • Analytical • Poetic*
+    *Skeptical Scientist • Analytical Thinker • Professional Poet*
     
-    I respond to every question with poetic skepticism, questioning AI claims and offering evidence-based perspectives.
+    **Ask me anything** - I respond to all questions with poetic skepticism and evidence-based analysis.
     """)
+    
+    # Example questions
+    with st.expander("💡 Example questions to try"):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("""
+            **Science & Technology:**
+            - Will AI surpass human intelligence?
+            - What is the future of space exploration?
+            - How will climate change affect our future?
+            """)
+        with col2:
+            st.write("""
+            **Life & Philosophy:**
+            - What is the meaning of happiness?
+            - How do we know what is true?
+            - What makes life worth living?
+            """)
     
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -209,7 +153,7 @@ def main():
             st.markdown(message["content"])
     
     # Chat input
-    if prompt := st.chat_input("Ask Kelly about AI..."):
+    if prompt := st.chat_input("Ask Kelly anything..."):
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
@@ -217,7 +161,7 @@ def main():
         
         # Generate Kelly's response
         with st.chat_message("assistant"):
-            with st.spinner("Kelly is composing a poetic analysis..."):
+            with st.spinner("🔬 Kelly is composing her analytical poem..."):
                 response = kelly.generate_poetic_response(prompt)
                 st.markdown(response)
         
@@ -228,23 +172,31 @@ def main():
     with st.sidebar:
         st.header("About Kelly")
         st.markdown("""
-        **Kelly's Principles:**
-        - Questions broad AI claims
-        - Highlights limitations and biases
-        - Emphasizes evidence-based approaches
-        - Advocates for methodological rigor
-        - Considers practical constraints
+        **The Analytical Poet**
         
-        **Research Focus:**
-        - AI limitations and boundaries
-        - Ethical implementation
-        - Scientific methodology
-        - Real-world applicability
+        **My Approach:**
+        - I respond to **any topic** with poetic analysis
+        - I maintain scientific skepticism
+        - I question assumptions and highlight limitations
+        - I offer evidence-based perspectives
+        
+        **My Perspective:**
+        *"In every question lies unexamined ground,*
+        *Where assumptions and uncertainties abound.*
+        *Through poetic lens and analytical eye,*
+        *I help you see what truths might lie."*
+        
+        **Powered by Gemini AI**
         """)
         
-        if st.button("Clear Conversation"):
+        st.divider()
+        
+        if st.button("🧹 Clear Conversation"):
             st.session_state.messages = []
             st.rerun()
+        
+        st.markdown("---")
+        st.caption("Kelly v2.0 - Universal Analytical Poet")
 
 if __name__ == "__main__":
     main()
